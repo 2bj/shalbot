@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+if [ -f shalbot/shalbot.pid ]
+then
+	cat shalbot/shalbot.pid | xargs ps -oetime -p | awk '{print  $1}' | sed 1d
+else
+	echo 'shalbot/shalbot.pid not found :('
+fi

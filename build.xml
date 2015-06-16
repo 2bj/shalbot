@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Shalbot" description="My first bot on php for chat.kg :P" default="dist">
+	
+	<property name="builddir" value="./build" override="true" />
+	
+	<fileset dir="." id="allfiles">
+		<include name="**" />
+		<exclude name="build.xml" />
+	</fileset>	
+
+	<!-- prepare -->
+	<target name="prepare" depends="checkbuilddir">
+		
+		<if>
+			<istrue value="${build_dir_exists}" />
+			<then>
+				<echo msg="Remove build directory..." />
+				<delete dir="${builddir}" includeemptydirs="true" verbose="true" failonerror="true" />
+			</then>			
+			<else>		
+				<echo msg="Making directory ./build" />
+				<mkdir dir="${builddir}" />
+			</else>
+		</if>
+	</target>
+	
+	<!-- build -->
+	<target name="build" depends="prepare">
+		<echo msg="Copying files to build directory..." />
+		
+		<echo msg="Copying ./** to ./build/" />
+		<copy todir="${builddir}">
+			<fileset refid="allfiles" />
+		</copy>
+	</target>
+
+	<!-- (DEFAULT) dist -->
+	<target name="dist" depends="build">
+		<echo msg="Creating archive.. (tarball)" />
+		
+		<tar destfile="./build/build.tar.gz" compression="gzip">
+			<fileset dir="./build">
+				<include name="*" />
+			</fileset>
+		</tar>
+		
+		<echo msg="Files copied and compressed in build directory OK!" />
+	</target>
+	
+	<!--  trash -->
+	<target name="checkbuilddir">
+		<echo msg="Checking build directory..." />
+		<available file="${builddir}" type="dir" property="build_dir_exists" />
+	</target>
+</project>

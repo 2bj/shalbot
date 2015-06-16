@@ -1,0 +1,86 @@
+#!/usr/bin/php -q
+<?php
+
+$cur_path = dirname(__FILE__);
+
+$lib_path = $cur_path.'/lib';
+
+set_include_path(get_include_path() . PATH_SEPARATOR . $lib_path);
+
+include_once 'config.php';
+require_once 'System/Daemon.php';
+
+$options = array(
+    "usePEAR" => FALSE,
+    "appName" => "shalbot",
+    "appDir" => $cur_path,
+    "appDescription" => "shalbot for chat.kg",
+    "authorName" => "Bakyt",
+    "authorEmail" => "gml2bj@gmail.com",
+    "sysMaxExecutionTime" => "0",
+    "sysMaxInputTime" => "0",
+    "sysMemoryLimit" => "1024M",
+    "appRunAsGID" => RUN_AS_USER_UID,
+    "appRunAsUID" => RUN_AS_USER_GID,
+    "logLocation" => $cur_path.'/shalbot/logs/'.date('dmY-Hi').'.log',
+    "appPidLocation" => $cur_path.'/shalbot/shalbot.pid',
+);
+
+
+System_Daemon::setOptions($options);
+
+//System_Daemon::setSigHandler(SIGCONT, array("ShalBot", "defaultSigHandler"));
+//System_Daemon::setSigHandler(SIGCONT, array("ShalBot", "SigHandler"));
+//System_Daemon::setSigHandler(SIGKILL, array("ShalBot", "SigHandler"));
+//System_Daemon::setSigHandler(SIGINT, array("ShalBot", "SigHandler"));
+
+
+// Spawn Deamon!
+System_Daemon::start();
+
+
+
+$nickname = 'bot@'.rand(1,100);
+$password = '';
+$room = 3;
+
+
+include_once 'classes/shalbot.php';
+
+$shalbot = new ShalBot($nickname, $password, $room);
+
+
+$runningOkay = TRUE;
+
+$relax_count = 0;
+
+$shutdown = FALSE;
+
+
+while(!System_Daemon::isDying() && !$shutdown)
+{
+    $runningOkay = $shalbot->watch();
+
+    if($runningOkay == FALSE)
+    {
+        $shalbot->logout();
+        $shalbot->http_init();
+        if(!$shalbot->re_login() && $shalbot->re_login_count > 3)
+        {
+            if($relax_count > 3)
+            {
+                $shutdown = TRUE;
+                System_Daemon::log(System_Daemon::LOG_INFO, '!!! Too much re_logins.. breaking and shut down');
+                break;
+            }
+            $relax_count++;
+            sleep(60*5);
+        }
+    }
+
+    System_Daemon::iterate(SHALBOT_WATCH_INTERVAL);
+}
+
+$shalbot->logout();
+
+System_Daemon::stop();

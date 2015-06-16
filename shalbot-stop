@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+if [ -f shalbot/shalbot.pid ]
+then
+	cat shalbot/shalbot.pid | xargs kill
+        echo "found pid and killing :)}} ..."
+else
+    echo "oops, pid not found"
+fi

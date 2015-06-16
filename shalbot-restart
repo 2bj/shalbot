@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+if [ -f shalbot/shalbot.pid ]
+then
+	cat shalbot/shalbot.pid | xargs kill
+        echo "kill pid.."
+fi
+
+echo "restart.."
+./shalbot-start

@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+LOGSDIR='shalbot/logs/'
+LASTLOGFILE=`ls ${LOGSDIR} -t | awk '{print $1}' | line`
+LASTLOGFILE="${LOGSDIR}${LASTLOGFILE}"
+
+if [ -f $LASTLOGFILE ]
+then
+	tail -f $LASTLOGFILE
+else
+	echo 'log file not found :('
+fi
